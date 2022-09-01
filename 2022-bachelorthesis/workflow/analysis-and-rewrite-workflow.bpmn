@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:quantme="https://github.com/UST-QuAntiL/QuantME-Quantum4BPMN" id="Definitions_13b49ha" targetNamespace="http://bpmn.io/schema/bpmn" exporter="QuantME Modeler" exporterVersion="4.4.0">
+  <bpmn:process id="analysis-and-rewrite-workflow" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="input_url" label="URL to the input data" type="string" />
+          <camunda:formField id="ibmq_token" label="IBMQ Access Token" type="string" />
+          <camunda:formField id="ibmq_backend" label="IBMQ Backend" type="string" />
+          <camunda:formField id="access_key" label="Access key of AWS account" type="string" />
+          <camunda:formField id="secret_access_key" label="Secret access key of AWS account" type="string" />
+          <camunda:formField id="bucket" label="Bucket to retrieve and upload program" type="string" />
+          <camunda:formField id="device" label="QPU or Simulator " type="string" />
+          <camunda:formField id="roleArn" label="Role ARN" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_0kum1kc</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0kum1kc" sourceRef="StartEvent_1" targetRef="Task_0bysx93" />
+    <bpmn:serviceTask id="Task_0bysx93" name="Initialize &#10;VQE" quantme:deploymentModelUrl="{{ wineryEndpoint }}/servicetemplates/http%253A%252F%252Fquantil.org%252Fquantme%252Fpull/VQEInitializerService/?csar">
+      <bpmn:incoming>SequenceFlow_0kum1kc</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0k16wq9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="ExclusiveGateway_0jbrct6">
+      <bpmn:incoming>SequenceFlow_0ncbyt5</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0k16wq9</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_08ni26o</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_08ni26o" sourceRef="ExclusiveGateway_0jbrct6" targetRef="Task_0qfiqux" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_1pzukzt" name="converged?" camunda:asyncBefore="true">
+      <bpmn:incoming>SequenceFlow_09l09is</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0ncbyt5</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0vmb89t</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_09l09is" sourceRef="Task_1mspa9s" targetRef="ExclusiveGateway_1pzukzt" />
+    <bpmn:sequenceFlow id="SequenceFlow_0ncbyt5" name="No" sourceRef="ExclusiveGateway_1pzukzt" targetRef="ExclusiveGateway_0jbrct6">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${finished == 'False'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SequenceFlow_0vmb89t" name="Yes" sourceRef="ExclusiveGateway_1pzukzt" targetRef="Task_06q9rh6">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${finished == 'True'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SequenceFlow_1csno8e" sourceRef="Task_06q9rh6" targetRef="EndEvent_08sc4da" />
+    <bpmn:userTask id="Task_06q9rh6" name="Analyze&#10;Results">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="plotUrl" label="Result Image URL" type="string">
+            <camunda:properties>
+              <camunda:property id="Property_1mktdna" />
+            </camunda:properties>
+            <camunda:validation>
+              <camunda:constraint name="readonly" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0vmb89t</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1csno8e</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_08sc4da">
+      <bpmn:incoming>SequenceFlow_1csno8e</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_1mspa9s" name="Calculate sum and adapt parameters" quantme:deploymentModelUrl="{{ wineryEndpoint }}/servicetemplates/http%253A%252F%252Fquantil.org%252Fquantme%252Fpull/VQEAdaptationService/?csar">
+      <bpmn:incoming>SequenceFlow_1mpf198</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_09l09is</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <quantme:quantumCircuitExecutionTask id="Task_0qfiqux" name="Execute VQE Circuits" provider="aws" programmingLanguage="braket">
+      <bpmn:incoming>SequenceFlow_08ni26o</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1mpf198</bpmn:outgoing>
+    </quantme:quantumCircuitExecutionTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1mpf198" sourceRef="Task_0qfiqux" targetRef="Task_1mspa9s" />
+    <bpmn:sequenceFlow id="SequenceFlow_0k16wq9" sourceRef="Task_0bysx93" targetRef="ExclusiveGateway_0jbrct6" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="analysis-and-rewrite-workflow">
+      <bpmndi:BPMNEdge id="SequenceFlow_0k16wq9_di" bpmnElement="SequenceFlow_0k16wq9">
+        <di:waypoint x="320" y="257" />
+        <di:waypoint x="415" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1mpf198_di" bpmnElement="SequenceFlow_1mpf198">
+        <di:waypoint x="650" y="257" />
+        <di:waypoint x="730" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1csno8e_di" bpmnElement="SequenceFlow_1csno8e">
+        <di:waypoint x="1150" y="257" />
+        <di:waypoint x="1222" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0vmb89t_di" bpmnElement="SequenceFlow_0vmb89t">
+        <di:waypoint x="955" y="257" />
+        <di:waypoint x="1050" y="257" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="962" y="239" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0ncbyt5_di" bpmnElement="SequenceFlow_0ncbyt5">
+        <di:waypoint x="930" y="232" />
+        <di:waypoint x="930" y="120" />
+        <di:waypoint x="440" y="120" />
+        <di:waypoint x="440" y="232" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="943" y="193" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_09l09is_di" bpmnElement="SequenceFlow_09l09is">
+        <di:waypoint x="830" y="257" />
+        <di:waypoint x="905" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_08ni26o_di" bpmnElement="SequenceFlow_08ni26o">
+        <di:waypoint x="465" y="257" />
+        <di:waypoint x="550" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0kum1kc_di" bpmnElement="SequenceFlow_0kum1kc">
+        <di:waypoint x="188" y="257" />
+        <di:waypoint x="220" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="239" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0jfklh6_di" bpmnElement="Task_0bysx93">
+        <dc:Bounds x="220" y="217" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_0jbrct6_di" bpmnElement="ExclusiveGateway_0jbrct6" isMarkerVisible="true">
+        <dc:Bounds x="415" y="232" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_1pzukzt_di" bpmnElement="ExclusiveGateway_1pzukzt" isMarkerVisible="true">
+        <dc:Bounds x="905" y="232" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="902" y="289" width="58" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_1dg3wae_di" bpmnElement="Task_06q9rh6">
+        <dc:Bounds x="1050" y="217" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1ruqffc_di" bpmnElement="EndEvent_08sc4da">
+        <dc:Bounds x="1222" y="239" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_093318x_di" bpmnElement="Task_1mspa9s">
+        <dc:Bounds x="730" y="217" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="QuantumCircuitExecutionTask_0ola47b_di" bpmnElement="Task_0qfiqux">
+        <dc:Bounds x="550" y="217" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
