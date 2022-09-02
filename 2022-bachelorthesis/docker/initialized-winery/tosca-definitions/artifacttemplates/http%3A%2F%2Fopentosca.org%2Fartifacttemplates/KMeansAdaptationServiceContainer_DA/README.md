@@ -2,7 +2,7 @@
 
 ## Haftungsausschluss
 
-Dies ist ein Forschungsprototyp und enthält insbesondere Beiträge von Studenten.
+Dies ist ein Forschungsprototyp und enthält insbesondere Beiträge von Studenten und ist adaptiert worden von der Implementierung aus [GitHub](https://github.com/fchollet/nelder-mead).
 Diese Software enthält möglicherweise Fehler und funktioniert möglicherweise, insbesondere bei variierten oder neuen Anwendungsfällen, nicht richtig.
 Insbesondere beim Produktiveinsatz muss 1. die Funktionsfähigkeit geprüft und 2. die Einhaltung sämtlicher Lizenzen geprüft werden.
 Die Haftung für entgangenen Gewinn, Produktionsausfall, Betriebsunterbrechung, entgangene Nutzungen, Verlust von Daten und Informationen, Finanzierungsaufwendungen sowie sonstige Vermögens- und Folgeschäden ist, außer in Fällen von grober Fahrlässigkeit, Vorsatz und Personenschäden ausgeschlossen.

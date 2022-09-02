@@ -37,7 +37,7 @@ docker-compose up --build
 
 To start the QuantME Transformation Framework, please execute the following steps:
 
-1. Clone the repository using release v1.4.0: 
+1. Clone the repository using release v1.7.0: 
 ```
 git clone https://github.com/UST-QuAntiL/QuantME-TransformationFramework.git --branch v1.7.0
 ```
@@ -97,13 +97,8 @@ When the analysis finishes, the possible optimization candidates are visualized 
 
 ![Workflow Rewrite Modal Candidate 1](./docs/workflow-rewrite-modal-1.png)
 
-In our example workflow, two optimization candidates are detected, one performing the clustering, and the second comprising the classification tasks.
-The tabs on the top of the modal can be used to switch between the visualization of all detected optimization candidates:
-
-![Workflow Rewrite Modal Candidate 2](./docs/workflow-rewrite-modal-2.png)
-
 Furthermore, a list of supported hybrid runtimes is displayed in the table below.
-Currently, only the Qiskit Runtime is supported.
+Currently, the Qiskit Runtime and the AWS Runtime are supported.
 Click on the ``Rewrite Workflow`` button to analyze if the selected hybrid runtime supports the current candidate.
 If yes, a hybrid program, as well as a corresponding deployment model, are automatically generated for the candidate.
 Finally, the workflow is rewritten to invoke the generated hybrid program.
@@ -194,10 +189,9 @@ Click on the corresponding workflow instance at the bottom, to view more details
 ## Troubleshooting
 
 Amazon Braket Hybrid Jobs is currently [based on the latest version](https://quantum-computing.ibm.com/lab/docs/iql/runtime/start).
-This means, also the generated hybrid programs must be compatible with the latest Qiskit version.
-As the hybrid programs are generated from the quantum and classical programs, their used Qiskit version influences the Qiskit version of the hybrid programs.
-Thus, the generated hybrid programs might fail if there are breaking changes in newer Qiskit versions.
-The provided programs are based on version 0.33.1, please visit the [Qiskit release page](https://pypi.org/project/amazon-braket-sdk/) in case you experience any problems, and check for possible changes.
+This means, also the generated hybrid programs must be compatible with the latest version.
+As the hybrid programs are generated from the quantum and classical programs, their used version influences the version of the hybrid programs.
+Thus, the generated hybrid programs might fail if there are breaking changes in newer versions.
 
 The setup starts overall 9 Docker containers, and the required services are deployed within one of these containers using so-called [Docker-in-Docker (dind)](https://github.com/jpetazzo/dind).
 Thus, if the startup of the Docker-Compose file or the deployment of the services fails, please make sure to provide enough resources to the docker engine, i.e., CPU, main memory, and disk space.
