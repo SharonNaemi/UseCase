@@ -90,6 +90,50 @@ services:
       replicas: 1
     networks:
       - modulo-demo
+  ### Qiskit Runtime Handler ###
+  redis:
+    image: redis:6.2.6
+    command: --port 5040
+    ports:
+      - "5040:5040"
+    networks:
+      - modulo-demo
+  # Amazon Braket Hybrid Jobs Handler
+  redis:
+    image: redis:6.2.6
+    command: --port 5045
+    ports:
+      - "5045:5045"
+    networks:
+      - modulo-demo
+  amazon-braket-hybrid-jobs-handler:
+    image: planqk/amazon-braket-hybrid-jobs-handler:v1.0.0
+    command: sh /startup.sh
+    ports:
+      - "8890:8890"
+    environment:
+      - REDIS_URL=redis://redis:5045
+      - DATABASE_URL=sqlite:////data/app.db
+    volumes:
+      - exec_data:/data
+    networks:
+      - modulo-demo
+  rq-worker:
+    image: planqk/amazon-braket-hybrid-jobs-handler:v1.0.0
+    command: rq worker --url redis://redis:5045 amazon-braket-hybrid-jobs-handler
+    environment:
+      - FLASK_RUN_HOST=amazon-braket-hybrid-jobs-handler
+      - FLASK_RUN_PORT=8890
+      - REDIS_URL=redis://redis:5045
+      - DATABASE_URL=sqlite:////data/app.db
+    volumes:
+      - exec_data:/data
+    depends_on:
+      - redis
+    deploy:
+      replicas: 1
+    networks:
+      - modulo-demo
 networks:
   modulo-demo:
     driver: bridge
